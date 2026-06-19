@@ -84,9 +84,6 @@ If you intentionally want to override existing definitions, you must specify the
 # Include in your parent project CMakeLists.txt
 add_subdirectory(third_party/sysmacro)
 
-# Link against the header-only interface
-target_link_libraries(your_project PRIVATE SysMacro)
-
 ---
 
 ## Performance & Bare-Metal Safety Notice
