@@ -4,35 +4,31 @@ A lightweight, zero-dependency, header-only C++20 utility for ultra-fast compile
 
 ## Features
 
-- **Header-Only & Zero Dependencies**: Drop the files straight into your /include directory and immediately use them.
-- **Zero-Cost Stringification**: Inline `constexpr` helpers that cost absolutely nothing if they aren't called.
-- **Definition Collision Protection**: Built-in protection guards to prevent silent macro overrides unless explicitly requested via `REPLACE_CURRENT_OS` or `REPLACE_CURRENT_ARCH`.
-- **IDE Friendly**: Keeps language servers like `clangd` perfectly happy across cross-compilation boundaries.
+* Header-Only & Zero Dependencies: Drop the files into your include directory and go.
+* Zero-Cost Abstraction: All detection logic is `constexpr`. If a stringifier is never called, the compiler strips the string tables entirely.
+* Deterministic Configuration: Built-in collision protection prevents accidental macro overrides.
+* Platform-Aware Macros: Includes specialized `IMPL_` macros to cleanly encapsulate platform or architecture-specific implementation blocks.
+* IDE-Friendly: Compatible with modern language servers (e.g., `clangd`) for seamless cross-compilation support.
 
 ---
 
 ## Repository Structure
 
-```
+```text
 📁 sysmacro/
-├── 📄 .clangd
-├── 📄 .gitignore
-├── 📄 CMakeLists.txt
-├── 📄 LICENSE
-├── 📄 README.md
 ├── 📁 include/
-│   ├── 📄 sysmacro.hpp      <-- Umbrella master header
-│   ├── 📄 sysmacro_os.hpp   <-- Isolated Operating System detection
-│   └── 📄 sysmacro_arch.hpp <-- Isolated Architecture detection
+│   ├── 📄 sysmacro.hpp        <-- Umbrella master header
+│   ├── 📄 sysmacro_os.hpp     <-- OS detection & platform macros
+│   └── 📄 sysmacro_arch.hpp   <-- Arch detection & arch macros
 └── 📁 tests/
-    └── 📄 verify.cpp        <-- Standalone validation suite
+└── 📄 verify.cpp          <-- Standalone validation suite
 ```
 
 ---
 
-## Configuration & Core Enums
+## Configuration & Enums
 
-### Operating Systems (sysmacro_os.hpp)
+### Operating Systems (`sysmacro_os.hpp`)
 | Macro Identifier | Value | Target Platform |
 | :--- | :--- | :--- |
 | OS_UNDEFINED | 0 | Fallback / Unknown Target |
@@ -53,8 +49,39 @@ A lightweight, zero-dependency, header-only C++20 utility for ultra-fast compile
 
 ## Usage Guide
 
-### Basic Inclusion
-To include the complete suite, use the master umbrella header:
+### Implementation Macros (The DSL Pattern)
+`sysmacro` provides `IMPL_` macros that automatically expand to your code *only* if the condition matches the build target. This keeps your logic clean and prevents `#ifdef` soup.
+
+```cpp
+#include <sysmacro.hpp>
+
+// This code only exists if compiled for Windows
+IMPL_WINDOWS(
+    void initialize_platform() { /* Windows-specific setup */ }
+)
+
+// This code only exists if compiled for x64
+IMPL_X64(
+    void optimized_math() { /* ASM or intrinsic implementation */ }
+)
+```
+
+### Pre-existing Definition Guards
+To prevent accidental symbol collisions, `sysmacro` triggers a compilation error if `CURRENT_OS` or `CURRENT_ARCH` is pre-defined. To explicitly override these:
+
+```cpp
+#define REPLACE_CURRENT_OS 1
+#define REPLACE_CURRENT_ARCH 1
+#include <sysmacro.hpp>
+```
+
+---
+
+## Performance & Bare-Metal Safety Notice
+
+The `get_os_name()` and `get_arch_name()` helpers are `inline constexpr`. If unused, the compiler effectively deletes them from your binary.
+
+---
 
 ```cpp
 #include <sysmacro.hpp>
@@ -66,28 +93,12 @@ int main() {
 }
 ```
 
-### Pre-existing Definition Guards
-If `CURRENT_OS` or `CURRENT_ARCH` are already defined anywhere in your compilation unit before including these headers, a compilation #error will trigger to prevent unexpected behavior. 
-
-If you intentionally want to override existing definitions, you must specify the override flags before inclusion:
-
-#define REPLACE_CURRENT_OS 1
-#define REPLACE_CURRENT_ARCH 1
-#include <sysmacro.hpp>
-
 ---
 
 ## Integration via CMake
 
-`sysmacro` can be dropped into your existing CMake pipeline gracefully. It automatically detects if it's being included by another project via add_subdirectory() or FetchContent, and safely exposes an INTERFACE target without exposing its internal verification tests.
-
-# Include in your parent project CMakeLists.txt
-add_subdirectory(third_party/sysmacro)
+`sysmacro` is designed to be added via `add_subdirectory`.
 
 ---
 
-## Performance & Bare-Metal Safety Notice
-
-The helper stringifiers get_os_name() and get_arch_name() are qualified with inline constexpr. If they are never called in your code, the compiler completely strips the string tables out of your binary layout. 
-
-> ⚠️ Warning for Bare-Metal Environment Creators: If these helpers are invoked within early kernel initialization sequences before physical memory page tables or virtual addressing are set up, accessing the returned data pointers may trip a CPU fault due to unmapped .rodata string segments. Use strictly where data segment pools are valid and supported.
+> ⚠️ Bare-Metal Warning: If these helpers are invoked during early kernel boot (before MMU/paging/data segment relocation), accessing the string return values may trigger a page fault or General Protection Fault because the `.rodata` section may not yet be mapped. Use these only after your data segment is initialized and available.
