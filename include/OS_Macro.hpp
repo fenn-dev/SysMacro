@@ -51,4 +51,27 @@ inline constexpr const char* get_os_name() {
     }
 }
 
+#define IMPL_WINDOWS(code)
+#define IMPL_LINUX(code)
+#define IMPL_MACOS(code)
+#define IMPL_ALOPEX(code)
+#define IMPL_DEFAULT(code)
+
+#if CURRENT_OS == OS_WINDOWS
+    #undef IMPL_WINDOWS
+    #define IMPL_WINDOWS(code) code
+#elif CURRENT_OS == OS_LINUX
+    #undef IMPL_LINUX
+    #define IMPL_LINUX(code) code
+#elif CURRENT_OS == OS_MACOS
+    #undef IMPL_MACOS
+    #define IMPL_MACOS(code) code
+#elif CURRENT_OS == OS_ALOPEX
+    #undef IMPL_ALOPEX
+    #define IMPL_ALOPEX(code) code
+#else
+    #undef IMPL_DEFAULT
+    #define IMPL_DEFAULT(code) code
+#endif
+
 #endif // SYSMACRO_OS_HPP

@@ -43,4 +43,24 @@ inline constexpr const char* get_arch_name() {
     }
 }
 
+#define IMPL_X86(code)
+#define IMPL_X64(code)
+#define IMPL_ARM64(code)
+#define IMPL_UNKNOWN_ARCH(code)
+#if CURRENT_ARCH == ARCH_X86
+    #undef IMPL_X86
+    #define IMPL_X86(code) code
+#elif CURRENT_ARCH == ARCH_X64
+    #undef IMPL_X64
+    #define IMPL_X64(code) code
+#elif CURRENT_ARCH == ARCH_ARM64
+    #undef IMPL_ARM64
+    #define IMPL_ARM64(code) code
+#else
+    #undef IMPL_UNKNOWN_ARCH
+    #define IMPL_UNKNOWN_ARCH(code) code
+#endif
+
+#define IMPL_X86_64(code) IMPL_X64(code)
+
 #endif // SYSMACRO_ARCH_HPP
