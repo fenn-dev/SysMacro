@@ -1,0 +1,22 @@
+CompileFlags:
+  Add: [
+    "-std=c++20",  # Tells the editor to use the C++20 language standard for parsing syntax.
+    "-Wall",        # Enables all core compiler warnings so your editor highlights potential bugs instantly.
+    
+    # --- Target Environment Simulators ---
+    # Un-comment ONLY ONE of the lines below by removing the '#' to force your 
+    # IDE/language server to highlight and check that specific platform's macro blocks.
+    
+    # "-D__ALOPEXOS__", # Simulates native compilation on AlopexOS
+    # "-D_WIN64",       # Simulates native compilation on 64-bit Windows
+    # "-D__linux__",    # Simulates native compilation on Linux
+    # "-D__APPLE__",    # Simulates native compilation on macOS
+
+    # --- Target Architecture Simulators ---
+    # Un-comment ONLY ONE of the lines below by removing the '#' to test how 
+    # the compiler evaluates your architecture detection branches.
+
+    # "-D__x86_64__",   # Simulates 64-bit AMD/Intel target (x86_64 / x64)
+    # "-D__aarch64__",  # Simulates 64-bit ARM target (ARM64 / arm64)
+    # "-D__i386__",     # Simulates legacy 32-bit AMD/Intel target (x86)
+  ]
