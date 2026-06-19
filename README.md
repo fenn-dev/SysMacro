@@ -85,7 +85,7 @@ If you intentionally want to override existing definitions, you must specify the
 add_subdirectory(third_party/sysmacro)
 
 # Link against the header-only interface
-target_link_libraries(your_project PRIVATE os_macro)
+target_link_libraries(your_project PRIVATE SysMacro)
 
 ---
 
